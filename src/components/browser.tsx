@@ -1,74 +1,19 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Eko, LLMs } from "@eko-ai/eko";
-import { BrowserAgent } from "@eko-ai/eko-web";
-import { useLocation } from "react-router";
-import { useCommand, usePulseEnv } from "@pulse-editor/react-api";
+import React, { useState } from "react";
+import { useRegisterAction } from "@pulse-editor/react-api";
+import { preRegisteredActions } from "../actions";
 
 export default function Browser() {
-  const location = useLocation();
-  const { envs } = usePulseEnv();
-
-  const [isBrowseCommandReady, setIsBrowseCommandReady] = useState(false);
-
-  const runAgent = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async (args: any) => {
-      console.log("Run agent with args:", args);
-      const url = args.url as string;
-
-      const llms: LLMs = {
-        default: {
-          provider: "openai",
-          model: "gpt-4o-mini",
-          apiKey: envs.OPENAI_API_KEY ?? "",
-        },
-      };
-      const agents = [new BrowserAgent()];
-      const eko = new Eko({ llms, agents });
-
-      const result = await eko.run(
-        url
-          // wrap all http links inside a param like /?uri=https%3A%2F%2Fwww.example.com%2F
-          .replace(
-            /https?:\/\/[^\s]+/g,
-            (url) => `local url /?uri=${encodeURIComponent(url)}`
-          )
-      );
-
-      return result.result;
-    },
-    [envs]
-  );
-
-  // Register command
-  useCommand(
-    {
-      name: "Agentic Web Browse",
-      description:
-        "A simple web browser with AI agent capabilities. AI will explore pages on your behalf",
-      parameters: {
-        url: {
-          type: "string",
-          description: "The URL to browse. Use the embedded link wherever possible. e.g. YouTube embed link instead of normal YouTube link.",
-        },
-      },
-    },
-    runAgent,
-    isBrowseCommandReady
-  );
-
   const [uri, setUri] = useState("");
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    setUri(params.get("uri") ?? "");
-  }, [location.search]);
-
-  useEffect(() => {
-    if (envs.OPENAI_API_KEY) {
-      setIsBrowseCommandReady(true);
-    }
-  }, [envs]);
+  // Register command
+  useRegisterAction(
+    preRegisteredActions["web-browse"],
+    async ({ url }: { url: string }) => {
+      setUri(() => encodeURIComponent(url));
+      return;
+    },
+    [uri]
+  );
 
   return (
     <div className="w-full h-full p-2 flex flex-col">
@@ -83,11 +28,7 @@ export default function Browser() {
             onChange={(e) => setUri(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                window.history.replaceState(
-                  null,
-                  "",
-                  `/?uri=${encodeURIComponent(uri)}`
-                );
+                setUri(encodeURIComponent(e.currentTarget.value));
               }
             }}
           />
@@ -103,9 +44,9 @@ export default function Browser() {
           ) : (
             // Make a simple welcome page and input to enter URL
             <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
-              <h1 className="text-2xl font-bold">Welcome to AI Browser</h1>
+              <h1 className="text-2xl font-bold">Welcome to Browser View</h1>
               <p className="text-center text-gray-600">
-                Enter a URL in the address bar to start browsing with AI agents.
+                Enter a URL in the address bar to start browsing.
               </p>
             </div>
           )}

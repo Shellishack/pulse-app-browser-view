@@ -13,13 +13,11 @@ export default function Main() {
     }
   }, [isReady, toggleLoading]);
 
-  useEffect(() => {
-    console.log("Refresh component");
-  }, []);
-
   return (
-    <BrowserRouter>
-      <Browser />
-    </BrowserRouter>
+    <div className="w-full h-full">
+      <BrowserRouter>
+        <Browser />
+      </BrowserRouter>
+    </div>
   );
 }

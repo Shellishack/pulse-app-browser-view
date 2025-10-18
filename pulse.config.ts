@@ -1,35 +1,26 @@
-import { ExtensionConfig, ExtensionTypeEnum } from "@pulse-editor/shared-utils";
+import { AppConfig, AppTypeEnum } from "@pulse-editor/shared-utils";
 import packageJson from "./package.json" with { type: "json" };
+import { preRegisteredActions } from "./src/actions";
 
 /**
  * Pulse Editor Extension Config
  *
  */
-const config: ExtensionConfig = {
+const config: AppConfig = {
   // Do not use hyphen character '-' in the id. 
   // The id should be the same as the package name in package.json.
   id: packageJson.name,
+  version: packageJson.version,
+  libVersion: packageJson.dependencies["@pulse-editor/shared-utils"],
   displayName: packageJson.displayName,
   description: packageJson.description,
-  version: packageJson.version,
-  extensionType: ExtensionTypeEnum.FileView,
+  appType: AppTypeEnum.FileView,
   fileTypes: ["txt", "json", "py", "cpp", "c", "tsx", "ts", "js", "jsx"],
-  visibility: packageJson["pulse-editor-marketplace"].visibility,
+  visibility: "public",
   recommendedHeight: 640,
   recommendedWidth: 360,
   thumbnail: "assets/thumbnail.png",
-  commandsInfoList: [
-    {
-      name: "Agentic Web Browse",
-      description: "A simple web browser with AI agent capabilities. AI will explore pages on your behalf",
-      parameters: {
-        url: {
-          type: "string",
-          description: "The URL to browse. Use the embedded link wherever possible. e.g. YouTube embed link instead of normal YouTube link.",
-        }
-      },
-    }
-  ]
+  preRegisteredActions: Object.values(preRegisteredActions),
 };
 
 export default config;
